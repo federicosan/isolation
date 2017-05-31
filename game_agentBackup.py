@@ -3,7 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
-import math
+
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -188,9 +188,107 @@ class MinimaxPlayer(IsolationPlayer):
         # Return the best move from the last completed search iteration
         return best_move
 
+    def is_terminal_state(self, game):
+        """Implements the terminal state test function by checking if
+        the for this it askes if the active player has any legal moves.
 
+        Parameters
+        -----------
+        game: isolation.Board
+            An instance of the Isolation game board class
+            representing the current game state.
 
+        Returns
+        -------
+        true if this board is a terminal state
+        false if this board is not a terminal state.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        return game.utility()!=0 or len(game.get_legal_moves()) == 0
 
+    def result (self, game, action):
+        """Returns the game state result for an action.
+
+        Parameters
+        -----------
+        game: isolation.Board
+            An instance of the Isolation game board class
+            representing the current game state.
+
+        action: a legal move
+
+        Returns
+        -------
+        A copy of the board where the action has been played.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        return game.forecast_move(action)
+
+    def min_value(self, game, depth, player):
+        """Implements the max-value function that
+        checks all possible moves for the max player on
+        a given state.
+
+        Parameters
+        -----------
+        game: isolation.Board
+            An instance of the Isolation game board class
+            representing the current game state.
+
+        depth: Depth is an integer representing the maximum number of plies to
+        search in the game tree before aborting
+
+        Returns
+        -------
+        The move with the maximum utility for max
+        on a given game state.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        if depth == 0 or self.is_terminal_state(game):
+            return game.utility(player)
+        v = inf
+        legal_moves = game.get_legal_moves()
+        if not actions:
+            return (-1, -1)
+        for a in actions:
+            v = min(v, self.max_value(self.result(game, a),depth-1))
+        return v
+
+    def max_value(self, game, depth, player):
+        """Implements the max-value function that
+        checks all possible moves for the max player on
+        a given state.
+
+        Parameters
+        -----------
+        game: isolation.Board
+            An instance of the Isolation game board class
+            representing the current game state.
+
+        depth: Depth is an integer representing the maximum number of plies to
+        search in the game tree before aborting
+
+        Returns
+        -------
+        The move with the maximum utility for max
+        on a given game state.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        if depth == 0 or self.is_terminal_state(game):
+            return game.utility(player)
+        v = -inf
+        legal_moves = game.get_legal_moves()
+        if not actions:
+            return (-1, -1)
+        for a in actions:
+            v = max(v, self.min_value(self.result(game, a), depth-1))
+        return v
 
     def minimax(self, game, depth):
         """Implement depth-limited minimax search algorithm as described in
@@ -233,126 +331,9 @@ class MinimaxPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
-
-        player = game.active_player
-
-        def is_terminal_state(game):
-            """Implements the terminal state test function by checking if
-            the for this it askes if the active player has any legal moves.
-
-            Parameters
-            -----------
-            game: isolation.Board
-                An instance of the Isolation game board class
-                representing the current game state.
-
-            Returns
-            -------
-            true if this board is a terminal state
-            false if this board is not a terminal state.
-            """
-        #    if self.time_left() < self.TIMER_THRESHOLD:
-        #        raise SearchTimeout()
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            return len(game.get_legal_moves(game.active_player)) == 0
-
-        def result(game, action):
-            """Returns the game state result for an action.
-
-            Parameters
-            -----------
-            game: isolation.Board
-                An instance of the Isolation game board class
-                representing the current game state.
-
-            action: a legal move
-
-            Returns
-            -------
-            A copy of the board where the action has been played.
-            """
-        #    if self.time_left() < self.TIMER_THRESHOLD:
-            #    raise SearchTimeout()
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            return game.forecast_move(action)
-
-        def max_value(game, depth):
-            """Implements the max-value function that
-            checks all possible moves for the max player on
-            a given state.
-
-            Parameters
-            -----------
-            game: isolation.Board
-                An instance of the Isolation game board class
-                representing the current game state.
-
-            depth: Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
-
-            Returns
-            -------
-            The move with the maximum utility for max
-            on a given game state.
-            """
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-
-            if depth == 0 or is_terminal_state(game):
-                return self.score(game, player)
-                #return game.utility(player)
-            v = -math.inf
-            actions = game.get_legal_moves()
-            #print(game.to_string())
-            #print ("depth: {d} | legal moves:{a}".format(d=depth, a=actions))
-            if not actions:
-                return (-1, -1)
-            for a in actions:
-                v = max(v, min_value(result(game, a), depth-1))
-            #print(game.to_string())
-            return v
-
-        def min_value(game, depth):
-            """Implements the max-value function that
-            checks all possible moves for the max player on
-            a given state.
-
-            Parameters
-            -----------
-            game: isolation.Board
-                An instance of the Isolation game board class
-                representing the current game state.
-
-            depth: Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
-
-            Returns
-            -------
-            The move with the maximum utility for max
-            on a given game state.
-            """
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-
-            if depth == 0 or is_terminal_state(game):
-                return self.score(game, player)
-                #return game.utility(player)
-            v = math.inf
-            actions = game.get_legal_moves()
-            if not actions:
-                return (-1, -1)
-            for a in actions:
-                v = min(v, max_value(result(game, a),depth-1))
-            #print(game.to_string())
-            return v
-
+        player = game.active_player()
         argmax = lambda iterable, func: max(iterable, key=func)
-        decision = argmax(game.get_legal_moves(), lambda a: min_value(result(game, a),depth))
-        #print(decision)
-        print(game.to_string())
-        return decision
+        return argmax(game.get_legal_moves(), lambda a: self.min_value(self.result(game, a),depth, player))
 
 
 
