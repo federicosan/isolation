@@ -236,7 +236,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         player = game.active_player
 
-        def is_terminal_state(game):
+        def is_terminal_state(thegame):
             """Implements the terminal state test function by checking if
             the for this it askes if the active player has any legal moves.
 
@@ -255,9 +255,9 @@ class MinimaxPlayer(IsolationPlayer):
         #        raise SearchTimeout()
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
-            return len(game.get_legal_moves(game.active_player)) == 0
+            return len(thegame.get_legal_moves(thegame.active_player)) == 0
 
-        def result(game, action):
+        def result(thegame, action):
             """Returns the game state result for an action.
 
             Parameters
@@ -276,9 +276,9 @@ class MinimaxPlayer(IsolationPlayer):
             #    raise SearchTimeout()
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
-            return game.forecast_move(action)
+            return thegame.forecast_move(action)
 
-        def max_value(game, depth):
+        def max_value(thegame, thedepth):
             """Implements the max-value function that
             checks all possible moves for the max player on
             a given state.
@@ -300,21 +300,21 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            if depth == 0 or is_terminal_state(game):
-                return self.score(game, player)
+            if thedepth == 0 or is_terminal_state(thegame):
+                return self.score(thegame, player)
                 #return game.utility(player)
             v = -math.inf
-            actions = game.get_legal_moves()
+            actions = thegame.get_legal_moves()
             #print(game.to_string())
             #print ("depth: {d} | legal moves:{a}".format(d=depth, a=actions))
             if not actions:
                 return (-1, -1)
             for a in actions:
-                v = max(v, min_value(result(game, a), depth-1))
+                v = max(v, min_value(result(thegame, a), thedepth-1))
             #print(game.to_string())
             return v
 
-        def min_value(game, depth):
+        def min_value(thegame, thedepth):
             """Implements the max-value function that
             checks all possible moves for the max player on
             a given state.
@@ -336,20 +336,26 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            if depth == 0 or is_terminal_state(game):
-                return self.score(game, player)
+            if thedepth == 0 or is_terminal_state(thegame):
+                return self.score(thegame, player)
                 #return game.utility(player)
             v = math.inf
-            actions = game.get_legal_moves()
+            actions = thegame.get_legal_moves()
             if not actions:
                 return (-1, -1)
             for a in actions:
-                v = min(v, max_value(result(game, a),depth-1))
+                v = min(v, max_value(result(thegame, a),thedepth-1))
             #print(game.to_string())
             return v
 
         argmax = lambda iterable, func: max(iterable, key=func)
-        decision = argmax(game.get_legal_moves(), lambda a: min_value(result(game, a),depth))
+
+        def argmax_f(keys, f):
+            if len(keys) == 0:
+                return (-1,-1)
+            return max(keys, key=f)
+
+        decision = argmax_f(game.get_legal_moves(), lambda a: min_value(result(game, a),depth-1))
         #print(decision)
         print(game.to_string())
         return decision
@@ -445,5 +451,49 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        player = game.active_player
+
+        def is_terminal_state(thegame):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            return len(thegame.get_legal_moves()) == 0
+
+        def result(thegame, action):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            return thegame.forecast_move(action)
+
+        def max_value(thegame, thedepth, thealpha, thebeta):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            if depth == 0 or is_terminal_state(thegame):
+                return self.score(thegame, player)
+            v = -math.inf
+            actions = thegame.get_legal_moves()
+            if not actions:
+                return (-1, -1)
+            for a in actions:
+                v = min(v, min_value(result(thegame, a),thedepth-1, thealpha, thebeta))
+                if v>= thebeta:
+                    return v
+                thealpha = max(thealpha, v)
+            return v
+
+        def min_value(thegame, thedepth, thealpha, thebeta):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            if depth == 0 or is_terminal_state(thegame):
+                return self.score(thegame, player)
+            v = math.inf
+            actions = thegame.get_legal_moves()
+            if not actions:
+                return (-1, -1)
+            for a in actions:
+                v = min(v, max_value(result(thegame, a),thedepth-1, thealpha, thebeta))
+                if v<= thealpha:
+                    return v
+                thebeta = min(thebeta, v)
+            return v
+
+        v = max_value(game, depth-1, alpha, beta)
+        return v
