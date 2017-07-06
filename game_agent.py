@@ -400,10 +400,27 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # Initialize the best move so that this function returns something
+        # in case the search fails due to timeout
+        best_move = (-1, -1)
 
-    def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            depthaux = 0
+            found = None
+            for  depthaux in range(0, 1000000000000000000000000000000000000000):
+                found = self.alphabeta(game, depthaux)
+                if found != None:
+                    return found
+
+        except SearchTimeout:
+            pass  # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
+
+    def alphabeta(self, game, depth, alpha=-math.inf, beta=math.inf):
         """Implement depth-limited minimax search with alpha-beta pruning as
         described in the lectures.
 
@@ -458,22 +475,22 @@ class AlphaBetaPlayer(IsolationPlayer):
                 raise SearchTimeout()
             return len(thegame.get_legal_moves()) == 0
 
-        def result(thegame, action):
+        def result(thegame, theaction):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
-            return thegame.forecast_move(action)
+            return thegame.forecast_move(theaction)
 
         def max_value(thegame, thedepth, thealpha, thebeta):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
-            if depth == 0 or is_terminal_state(thegame):
+            if thedepth == 0 or is_terminal_state(thegame):
                 return self.score(thegame, player)
             v = -math.inf
             actions = thegame.get_legal_moves()
             if not actions:
                 return (-1, -1)
             for a in actions:
-                v = min(v, min_value(result(thegame, a),thedepth-1, thealpha, thebeta))
+                v = max(v, min_value(result(thegame, a),thedepth-1, thealpha, thebeta))
                 if v>= thebeta:
                     return v
                 thealpha = max(thealpha, v)
@@ -482,7 +499,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         def min_value(thegame, thedepth, thealpha, thebeta):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
-            if depth == 0 or is_terminal_state(thegame):
+            if thedepth == 0 or is_terminal_state(thegame):
                 return self.score(thegame, player)
             v = math.inf
             actions = thegame.get_legal_moves()
@@ -495,5 +512,20 @@ class AlphaBetaPlayer(IsolationPlayer):
                 thebeta = min(thebeta, v)
             return v
 
-        v = max_value(game, depth-1, alpha, beta)
-        return v
+        #def argmax_f(keys, f):
+        #    if len(keys) == 0:
+        #        return (-1,-1)
+        #    return max(keys, key=f)
+
+        #decision = argmax_f(game.get_legal_moves(), lambda a: max_value(result(game, a),depth, alpha, beta))
+        #print(decision)
+        #print(game.to_string())
+        decision = None
+        thealpha = alpha
+        thebeta = beta
+        for a in game.get_legal_moves():
+            v = min_value(result(game, a), depth-1, thealpha, thebeta)
+            if v > thealpha:
+                thealpha = v
+                decision = a
+        return decision
