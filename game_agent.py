@@ -42,7 +42,7 @@ def custom_score(game, player):
             return float("inf")
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(my_moves - opp_moves)
+    return float(1.5*my_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -75,7 +75,7 @@ def custom_score_2(game, player):
 
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(my_moves - opp_moves)
+    return float(my_moves - 1.5*opp_moves)
 
 
 def custom_score_3(game, player):
@@ -105,7 +105,10 @@ def custom_score_3(game, player):
 
     if game.is_winner(player):
             return float("inf")
-    return float(len(game.get_legal_moves(player)))
+
+    my_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(my_moves*my_moves-10*opp_moves)
 
 
 class IsolationPlayer:
@@ -357,7 +360,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         decision = argmax_f(game.get_legal_moves(), lambda a: min_value(result(game, a),depth-1))
         #print(decision)
-        print(game.to_string())
+        #print(game.to_string())
         return decision
 
 
@@ -409,9 +412,13 @@ class AlphaBetaPlayer(IsolationPlayer):
             # raised when the timer is about to expire.
             depthaux = 0
             found = None
-            for  depthaux in range(0, 1000000000000000000000000000000000000000):
+            cutoff = 100
+            for  depthaux in range(1, 1000000000000000):
+                #print(depthaux)
+                if self.time_left() < self.TIMER_THRESHOLD:
+                    raise SearchTimeout()
                 found = self.alphabeta(game, depthaux)
-                if found != None:
+                if depthaux > cutoff:
                     return found
 
         except SearchTimeout:
