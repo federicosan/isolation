@@ -417,9 +417,9 @@ class AlphaBetaPlayer(IsolationPlayer):
                 #print(depthaux)
                 if self.time_left() < self.TIMER_THRESHOLD:
                     raise SearchTimeout()
-                found = self.alphabeta(game, depthaux)
+                best_move = self.alphabeta(game, depthaux)
                 if depthaux > cutoff:
-                    return found
+                    return best_move
 
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
