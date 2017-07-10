@@ -108,8 +108,8 @@ def custom_score_3(game, player):
 
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(my_moves*my_moves-10*opp_moves)
-
+    #return float(opp_moves/len(game.get_blank_spaces()) + my_moves )
+    return float( 1.2*(game.height * game.width - len(game.get_blank_spaces()))+ 1.5 * my_moves -  0.9 * opp_moves )
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -412,7 +412,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             # raised when the timer is about to expire.
             depthaux = 0
             found = None
-            cutoff = 100
+            cutoff = 200
             for  depthaux in range(1, 1000000000000000):
                 #print(depthaux)
                 if self.time_left() < self.TIMER_THRESHOLD:
